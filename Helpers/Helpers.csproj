@@ -20,7 +20,7 @@
     <None Update="Assets\StarsInput\dayTwo.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Assets\StarsInput\thirdStar_test.txt">
+    <None Update="Assets\StarsInput\inputTest.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
