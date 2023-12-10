@@ -1,5 +1,4 @@
 ﻿using Helpers;
-using System.Diagnostics;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -17,12 +16,15 @@ int mapWidth = lineList[0].Length;
 
 //map[y,x]
 string[,] map = new string[mapHeight, mapWidth];
+bool gearRatio = true;
 map = fillMap(lineList, map);
 //SymbolList.ForEach(x => Console.WriteLine(x));
 int totalSum = 0;
 int TotalRatio = 0;
 int previousHeight = 0;
 int previousNumber = 0;
+int[,] previousMatch = new int[0, 0];
+List<int> matchedGearNumbers = new List<int>();
 
 Console.WriteLine(map);
 
@@ -33,11 +35,14 @@ for (int y = 0; y < mapHeight; y++)
         if (SymbolList.Contains(map[y, x]))
         {
             Console.WriteLine($"Coordinates of match:: height:{y}  width:{x}");
-            gearMachineSymbol(y, x);    
+            gearMachineSymbol(y, x);
+            matchedGearNumbers.Clear();
+           
         };
     }
 }
-Console.WriteLine($"\n>>>> SOLUTION TO STAR_FIVE/SIX:: {totalSum}");
+Console.WriteLine($"\n>>>> SOLUTION TO STAR_FIVE: {totalSum}");
+Console.WriteLine($"\n>>>> SOLUTION TO STAR_SIX:: {TotalRatio}");
 
 void gearMachineSymbol(int MatchHeight, int MatchWidth)
 {
@@ -62,6 +67,7 @@ void gearMachineSymbol(int MatchHeight, int MatchWidth)
             if (check)
             {
                 //Console.WriteLine($"\tSymbol matches with Number coordinates:: height:{MatchHeight + y}  wdith::{MatchWidth + x}");
+                
                 gearMachineNumber(MatchHeight, MatchWidth, (MatchHeight+y), (MatchWidth+x)); ;
             }
         }
@@ -83,6 +89,7 @@ List<string> fillList(int heightLine)
 
 void gearMachineNumber(int MatchHeight, int MatchWidth,int NumberMatchHeight, int NumberMatchWidth)
 {
+    int[,] currentMatch = new int[MatchHeight, MatchWidth];
     //getLineWithMatchedNumber
     List<string> yOpNumber = new List<string>();
     yOpNumber = fillList(NumberMatchHeight);
@@ -112,7 +119,7 @@ void gearMachineNumber(int MatchHeight, int MatchWidth,int NumberMatchHeight, in
         }
         if(count > 1)
         {
-            Console.WriteLine("Not printing: double");
+            //Console.WriteLine("Not printing: double");
             Array.Clear(YopNumber);
         }
     }
@@ -168,22 +175,19 @@ void gearMachineNumber(int MatchHeight, int MatchWidth,int NumberMatchHeight, in
             number = int.Parse(tekstOnlyNumber.Last());
             //string test = tekstOnlyNumber[1];
         }
-        Console.WriteLine($"Number::{number}");
-        if(NumberMatchHeight == 135)
-        {
-            Console.WriteLine("Stop");
-        }
+        //Console.WriteLine($"Number::{number}");
         if (previousHeight == NumberMatchHeight)
         {
             if(previousNumber == number)
             {
-                Console.WriteLine($"Not printing: Previous number the same on the same height:: {number}");
+                //Console.WriteLine($"Not printing: Previous number the same on the same height:: {number}");
                 previousHeight = NumberMatchHeight;
             }
             else
             {
                 Console.WriteLine($"\tNumber to Write:: {number}");
                 totalSum = totalSum + number;
+                matchedGearNumbers.Add(number);
                 previousNumber = number;
                 previousHeight = NumberMatchHeight;
             }
@@ -193,7 +197,23 @@ void gearMachineNumber(int MatchHeight, int MatchWidth,int NumberMatchHeight, in
             Console.WriteLine($"\tNumber to Write:: {number}");
             totalSum = totalSum + number;
             previousNumber = number;
+            matchedGearNumbers.Add(number);
             previousHeight = NumberMatchHeight;
+        }
+        if (previousMatch != currentMatch)
+        {
+            if (matchedGearNumbers.Count >= 2)
+            {
+                int singleRation = 1;
+                foreach (var gear in matchedGearNumbers)
+                {
+                    singleRation = singleRation* gear;
+                }
+                Console.WriteLine($"\t\tGear Matched:: {singleRation}");
+                TotalRatio = TotalRatio + singleRation;
+                Console.WriteLine($"\t\tTotal Matched:: {TotalRatio}");
+                matchedGearNumbers.Clear();
+            }
         }
         Array.Clear(YopNumber);
         TekstWithNumberBuilder.Clear();
@@ -224,16 +244,23 @@ string[,] fillMap(List<String> lineList, string[,] map)
 
 List<string> MakeSymbolList(string charachter)
 {
-    var pattern = @"\d+|[.]";
-    bool symbolMatch = Regex.IsMatch(charachter, pattern);
-    if (!symbolMatch)
-    {;
-        if (!SymbolList.Contains(charachter))
+    if (!gearRatio)
+    {
+        var pattern = @"\d+|[.]";
+        bool symbolMatch = Regex.IsMatch(charachter, pattern);
+        if (!symbolMatch)
         {
-            SymbolList.Add(charachter.ToString());
-        };
+            ;
+            if (!SymbolList.Contains(charachter))
+            {
+                SymbolList.Add(charachter.ToString());
+            };
+        }
     }
-    SymbolList.Add("*");
+    else
+    {
+        SymbolList.Add("*");
+    }
     return SymbolList;
 }
 
