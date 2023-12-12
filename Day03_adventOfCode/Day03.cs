@@ -67,7 +67,9 @@ void gearMachineSymbol(int MatchHeight, int MatchWidth)
             if (check)
             {
                 //Console.WriteLine($"\tSymbol matches with Number coordinates:: height:{MatchHeight + y}  wdith::{MatchWidth + x}");
-                
+                //TODO don't match on xy=0;x=0;
+                //TODO divide to left, right or middle <<--X-->>
+                //TODO make a GearClass??
                 gearMachineNumber(MatchHeight, MatchWidth, (MatchHeight+y), (MatchWidth+x)); ;
             }
         }
