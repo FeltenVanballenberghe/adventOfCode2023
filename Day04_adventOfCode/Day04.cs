@@ -1,111 +1,110 @@
 ﻿using Helpers;
-using System.Security.Cryptography.X509Certificates;
-using System.Security.Principal;
 using System.Text.RegularExpressions;
 
-Console.WriteLine("Hello, AdventOfCode \n\n");
+//ReadFile
 List<string> lineList = new List<string>();
 lineList = InputTools.ReadAllLines("dayFour");
-List<string> SymbolList = new List<string>();
-List<int> LotterRangeList = new List<int>();
 int TotalSum = 0;
-int LastIndexLottery = -1;
-int FirstIndexLottery = -1;
 
-string linePattern = @"[a-z]|:|[|]";
-string numbersPattern = @"\s+";
-
-
-
-foreach (var line in lineList)
+//Functie MakeCard
+ScratchCard GetCard(string line)
 {
-    //split game + nr
-    IEnumerable<string> Results = Regex.Split(line.ToLower(), linePattern, RegexOptions.IgnoreCase).Where((n) => !string.IsNullOrWhiteSpace(n));
-    Results.ToList();
-    string GameNr = Results.First();
-    Console.WriteLine($"GameNr:: {GameNr}");
-    IEnumerable<string> WinningNumbers = Regex.Split(Results.ElementAt(1), numbersPattern, RegexOptions.IgnoreCase).Where((n)=> !string.IsNullOrWhiteSpace(n));
-    IEnumerable<string> LotteryNumbers = Regex.Split(Results.Last(), numbersPattern, RegexOptions.IgnoreCase).Where((n) => !string.IsNullOrWhiteSpace(n));
+    //Regex
+    string LinePattern = @"[a-z]|:|[|]";
+    string NumbersPattern = @"\s+";
 
+    //Lees line
+    IEnumerable<string> Results = Regex.Split(line.ToLower(), LinePattern, RegexOptions.IgnoreCase).Where((n) => !string.IsNullOrWhiteSpace(n));
+    IEnumerable<string> WinningNumbers = Regex.Split(Results.ElementAt(1), NumbersPattern, RegexOptions.IgnoreCase).Where((n) => !string.IsNullOrWhiteSpace(n));
+    IEnumerable<string> LotteryNumbers = Regex.Split(Results.Last(), NumbersPattern, RegexOptions.IgnoreCase).Where((n) => !string.IsNullOrWhiteSpace(n));
     //Tolist
-    List<int> WinningNumbersIntList = WinningNumbers.ToList().Select(int.Parse).ToList();
-    List<int> LotteryNumbersIntList = LotteryNumbers.ToList().Select(int.Parse).ToList();
-    //sorting
+    string GameNr = Results.First();
+    List<int> WinningNumbersIntList = WinningNumbers.Select(int.Parse).ToList();
+    List<int> LotteryNumbersIntList = LotteryNumbers.Select(int.Parse).ToList();
+    //Sorting
     WinningNumbersIntList.Sort();
     LotteryNumbersIntList.Sort();
+    //Return new scratchCard object
+    return new ScratchCard()
+    {
+        CardNumber = int.Parse(GameNr),
+        WinningNumbers = WinningNumbersIntList.Intersect(LotteryNumbersIntList).ToList()
+    };
+}
 
-    for(int n = 0; n < WinningNumbersIntList.Count; n++)
-    {
-        FirstIndexLottery = LotteryNumbersIntList.FindIndex(s => s.Equals(WinningNumbersIntList.ElementAt(n)));
-        if (FirstIndexLottery == -1)
-        {
-            continue;
-        }
-        else
-        {
-            break;
-        }
-    }
-
-    for (int t = WinningNumbersIntList.Count - 1; t >= 0; t--)
-    {
-        LastIndexLottery = LotteryNumbersIntList.FindIndex(s=> s.Equals(WinningNumbersIntList.ElementAt(t)));
-        if (LastIndexLottery == -1)
-        {
-            continue;
-        }
-        else
-        {
-            break;
-        }
-    }
-    
-    
-    int[] LotteryNumbersIntArray = LotteryNumbersIntList.ToArray();
-    var Mynumbers = WinningNumbersIntList.Intersect(LotteryNumbersIntList).ToList();
-    
-    if (FirstIndexLottery == -1 && LastIndexLottery == -1)
-    {
-        Console.WriteLine("No Match");
-    }
-    else if (FirstIndexLottery == LastIndexLottery)
-    {
-        // FirstIndexLottery count +1
-        int LotteryRangeSingleNumber = LotteryNumbersIntArray.ElementAt((FirstIndexLottery));
-        LotterRangeList.Add(LotteryRangeSingleNumber);
-    }
-    else
-    {
-        int[] LotteryRange = LotteryNumbersIntArray[FirstIndexLottery..(LastIndexLottery+1)];
-        LotterRangeList = LotteryRange.ToList();
-    }
-    
-    //Winnende numbers lijst
-    List<int> indexList = new List<int>();
-    foreach(int win in WinningNumbersIntList)
-    {
-        
-        int IndexLotteryNumber = LotterRangeList.FindIndex(s => s.Equals(win));
-        if (IndexLotteryNumber != -1)
-        {
-            //Console.WriteLine($"winningNumber:: {win}");
-            indexList.Add(IndexLotteryNumber);
-        }
-    }
-    //indexList.ForEach(x=> Console.WriteLine(x));
-    int count = indexList.Count;
-    if (count > 0)
-    {
-        int startCount =(int)Math.Pow(2, indexList.Count-1);
-        int Score = (int)Math.Pow(2, Mynumbers.Count - 1);
-        Console.WriteLine(startCount);
-        Console.WriteLine(Score);
-        TotalSum = TotalSum + startCount;
-        LotterRangeList.Clear();
-    }
+//Get Total score from each ScratchCard
+foreach (string line in lineList)
+{
+    int result = GetCard(line).Score;
+    TotalSum = TotalSum + result;
 }
 
 Console.WriteLine($"\n>>>> SOLUTION TO STAR_SEVEN:: {TotalSum}");
+
+//PART TWO
+/* Of each card make a list of 'matching cards', 
+ * check Matching cards again and again, 
+ * and number of cards each time to the 'result.list' 
+ * containing all cards*/
+List<ScratchCard> DownTheRabbitHole(List<ScratchCard> AllCards, ScratchCard SingleCard)
+{
+    //if(SingleCard.CardNumber == 95)
+    //{
+    //    Console.WriteLine("stop");
+    //}
+    //Console.WriteLine($"cardNumber:: {SingleCard.CardNumber}");
+    //SingleCard.WinningNumbers.ForEach(x => Console.WriteLine($"Matched Numbers {x.ToString()}"));
+
+    //math CLAMP(input, out(range[0, allCards.count]) making sure that input is in the output range
+    int StartRange = Math.Clamp(SingleCard.CardNumber, 0, AllCards.Count);
+    //Of the rabbit card, get the all matching cards representing the (rabbit) winningNumbers.count, dont max allCards orginal list
+    int StopRange = Math.Clamp(SingleCard.CardNumber + SingleCard.WinningNumbers.Count, 0, AllCards.Count);
+    int CountForRange= StopRange - StartRange;
+
+    //Of all the winning cards - get all matching cards within the rabbit range
+    //Console.WriteLine(AllCards.AsReadOnly());
+    List<ScratchCard> cardCopies = AllCards.GetRange(StartRange, CountForRange);
+
+    //Initiate countingCardsList with orginal list (first counts)
+    var Result = new List<ScratchCard>(cardCopies);
+
+    //each time a card has matching cards check each matching card down the rabbit hole.
+    foreach (var copy in cardCopies)
+    {
+        //add returned result to current result
+        Result.AddRange(DownTheRabbitHole(AllCards, copy));
+    }
+    //eventually return list
+    return Result;
+}
+
+//allCards from txt
+var allCards = new List<ScratchCard>();
+lineList.ForEach(line => allCards.Add(GetCard(line)));
+
+//inital list
+List<ScratchCard> allMatchingCards = new List<ScratchCard>(allCards);
+
+foreach (ScratchCard card in allCards)
+{
+    allMatchingCards.AddRange(DownTheRabbitHole(allCards, card));
+}
+
+Console.WriteLine($"\n>>>> SOLUTION TO STAR_EIGHT:: {allMatchingCards.Count}");
+
+public class ScratchCard
+{
+    public int CardNumber;
+    public List<int> WinningNumbers = new List<int>();
+    public int Score => (int)Math.Pow(2, WinningNumbers.Count - 1);
+}
+
+
+
+
+
+
+
 
 
 
