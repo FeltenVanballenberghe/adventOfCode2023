@@ -42,7 +42,7 @@ for (int y = 0; y < mapHeight; y++)
     }
 }
 Console.WriteLine($"\n>>>> SOLUTION TO STAR_FIVE: {totalSum}");
-Console.WriteLine(git mlerg$"\n>>>> SOLUTION TO STAR_SIX:: {TotalRatio}");
+Console.WriteLine($"\n>>>> SOLUTION TO STAR_SIX:: {TotalRatio}");
 
 void gearMachineSymbol(int MatchHeight, int MatchWidth)
 {
